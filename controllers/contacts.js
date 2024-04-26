@@ -20,23 +20,24 @@ const {
     Pager
 } = require('@jworkman-fs/asl');
 
-const index = (req, res) => {
+const index = async (req, res) => {
     try {
         let results = ContactModel.index();
+        console.log(`---------------Filter---------------------- ${req.get('X-Filter-Operator')} - ${req.get('X-Filter-Value')} - ${req.get('X-Filter-By')}`)
+        results = filterContacts(
+            req.get('X-Filter-By')||'id',
+            req.get('X-Filter-Operator')||'gt',
+            req.get('X-Filter-Value')||0,
+            results
+        );
 
-
-        if (req.get('X-Filter-By')) {
-            console.log(`---------------Filter---------------------- ${req.get('X-Filter-Operator')}`)
-            results = filterContacts(req.get('X-Filter-By'), req.get('X-Filter-Operator'), req.get('X-Filter-Value'), results);
-
-        }
         console.log(results[0], results[results.length - 1])
 
-
-
-        if (req.query.sort) {
-            results = sortContacts(results, req.query.sort, req.query.direction || 'asc');
-        }
+        results = sortContacts(
+            results,
+            req.query.sort || 'id',
+            req.query.direction || 'asc'
+        );
 
         const page = parseInt(req.query.page, 10) || 1;
         const limit = parseInt(req.query.limit, 10) || 10;
@@ -64,12 +65,17 @@ const index = (req, res) => {
 
 const create = (req, res) => {
     try {
-        const { firstname, lastname, email, phone, birthday } = req.body;
-        if (!firstname || !lastname || !email || !phone || !birthday) {
-        }
-        const newContact = ContactModel.create(req.body);
+        const newContact = ContactModel.create({...req.body});
         res.status(201).location(`/v1/contacts/${newContact.id}`).send(newContact);
     } catch (error) {
+        switch (error.name) {
+            case "InvalidContactFieldError":
+            case "InvalidContactSchemaError":
+                res.status(error.statusCode).json({ ...error });
+                break;
+            default:
+                break;
+        }
         res.status(400).json({ error: error.message });
     }
 }
