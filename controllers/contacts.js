@@ -1,24 +1,25 @@
 const {
-    ApiError,
-    InvalidContactFieldError,
-    InvalidContactSchemaError,
-    BlankContactFieldError,
-    ContactNotFoundError,
-    NoContactsFoundError,
-    DuplicateContactResourceError,
-    InvalidContactResourceError,
-    PagerError,
-    PagerNoResultsError,
-    PagerOutOfRangeError,
-    ResourceTestingError,
-    ServerUnreachableError,
-    ResourceImplementationError,
-    ResourceUnreachableError,
+    // ApiError,
+    // InvalidContactFieldError,
+    // InvalidContactSchemaError,
+    // BlankContactFieldError,
+    // ContactNotFoundError,
+    // NoContactsFoundError,
+    // DuplicateContactResourceError,
+    // InvalidContactResourceError,
+    // PagerError,
+    // PagerNoResultsError,
+    // PagerOutOfRangeError,
+    // ResourceTestingError,
+    // ServerUnreachableError,
+    // ResourceImplementationError,
+    // ResourceUnreachableError,
     ContactModel,
     filterContacts,
     sortContacts,
     Pager
 } = require('@jworkman-fs/asl');
+
 
 const index = async (req, res) => {
     try {
@@ -65,8 +66,8 @@ const index = async (req, res) => {
 
 const create = (req, res) => {
     try {
-        const newContact = ContactModel.create({...req.body});
-        res.status(201).location(`/v1/contacts/${newContact.id}`).send(newContact);
+        const newContact = ContactModel.create(req.body);
+        res.status(303).location(`/v1/contacts/${newContact.id}`).send(newContact);
     } catch (error) {
         switch (error.name) {
             case "InvalidContactFieldError":
@@ -91,8 +92,8 @@ const show = (req, res) => {
 
 const update = (req, res) => {
     try {
-        const { firstname, lastname, email, phone, birthday } = req.body;
-        const updatedContact = ContactModel.update(req.params.id, { firstname, lastname, email, phone, birthday });
+        const { fname, lname, email, phone, birthday } = req.body;
+        const updatedContact = ContactModel.update(req.params.id, { fname, lname, email, phone, birthday });
         res.status(200).json(updatedContact);
     } catch (error) {
         res.status(400).json({ error: error.message });
